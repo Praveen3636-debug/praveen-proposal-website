@@ -1,0 +1,531 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#150810;color:#fce8ef;font-family:'Jost',sans-serif;overflow-x:hidden}
+canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem 4rem;text-align:center}
+.screen.on{display:flex;animation:fu .8s ease}
+@keyframes fu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+.tag{font-size:10px;letter-spacing:6px;text-transform:uppercase;color:#e07a8a;margin-bottom:1.2rem}
+.serif{font-family:'Playfair Display',serif}
+.big{font-family:'Playfair Display',serif;font-size:clamp(34px,6.5vw,68px);font-weight:400;line-height:1.15;color:#fce8ef}
+.big em{font-style:italic;color:#e8637a}
+.mid{font-family:'Playfair Display',serif;font-size:clamp(18px,3.2vw,32px);font-weight:400;font-style:italic;color:#fce8ef;line-height:1.6;max-width:500px}
+.div{width:50px;height:1px;margin:1.5rem auto;background:rgba(232,99,122,.4)}
+.div2{display:flex;align-items:center;gap:12px;justify-content:center;margin:1.5rem auto}
+.div2::before,.div2::after{content:'';flex:1;max-width:60px;height:1px;background:rgba(232,99,122,.35)}
+.div2-icon{font-size:14px;color:rgba(232,99,122,.7)}
+.body{font-size:14px;font-weight:300;line-height:1.95;color:rgba(252,232,239,.6);max-width:400px;margin:0 auto}
+
+.qbox{border:1px solid rgba(232,99,122,.22);border-radius:10px;padding:1.6rem 1.8rem;max-width:460px;margin:.7rem auto;background:rgba(232,99,122,.05);position:relative}
+.qbox::before{content:'\201C';font-family:'Playfair Display',serif;font-size:64px;color:rgba(232,99,122,.18);position:absolute;top:-12px;left:14px;line-height:1}
+.qt{font-family:'Playfair Display',serif;font-size:clamp(15px,2.6vw,19px);font-style:italic;color:#fce8ef;line-height:1.8;position:relative;z-index:1}
+.qa{font-size:10px;letter-spacing:3px;color:rgba(232,99,122,.6);margin-top:.85rem;text-transform:uppercase}
+.qgrid{display:flex;flex-direction:column;gap:.85rem;max-width:480px;width:100%;margin:.8rem auto}
+
+.name-box{max-width:380px;width:100%;margin:2rem auto}
+.name-label{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(252,232,239,.4);margin-bottom:1rem;display:block}
+.name-input{width:100%;background:transparent;border:none;border-bottom:1.5px solid rgba(232,99,122,.35);padding:.8rem .5rem;font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,38px);font-style:italic;color:#fce8ef;text-align:center;outline:none;transition:border-color .3s;caret-color:#e8637a}
+.name-input::placeholder{color:rgba(252,232,239,.18)}
+.name-input:focus{border-bottom-color:#e8637a}
+
+.name-show{font-family:'Playfair Display',serif;font-size:clamp(30px,5.5vw,58px);font-style:italic;color:#e8637a;font-weight:400;line-height:1.2}
+
+.btn-yes{padding:1rem 3rem;background:#b02a42;color:#fff0f4;border:none;border-radius:40px;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;font-weight:500;transition:transform .25s,background .25s;box-shadow:0 0 0 4px rgba(176,42,66,.2)}
+.btn-yes:hover{transform:translateY(-3px);background:#96213a}
+.btn-no{padding:1rem 2.2rem;background:transparent;color:rgba(252,232,239,.3);border:1px solid rgba(252,232,239,.12);border-radius:40px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .3s}
+.btn-no:hover{color:rgba(252,232,239,.55);border-color:rgba(252,232,239,.28)}
+.btn-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem;align-items:center}
+.btn-nav{padding:.65rem 1.8rem;background:transparent;color:rgba(252,232,239,.28);border:1px solid rgba(252,232,239,.1);border-radius:20px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:1.5rem}
+.btn-nav:hover{color:rgba(252,232,239,.6);border-color:rgba(252,232,239,.22)}
+.btn-nav.rose{color:#e8637a;border-color:rgba(232,99,122,.3)}
+.btn-nav.rose:hover{background:rgba(232,99,122,.07)}
+.no-msg{font-size:12px;color:rgba(252,232,239,.32);margin-top:.75rem;letter-spacing:.5px;min-height:20px;font-style:italic;font-family:'Playfair Display',serif}
+
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:.85rem;max-width:480px;margin:1.5rem auto 0;width:100%}
+.pc{border:1px solid rgba(232,99,122,.18);border-radius:10px;padding:1.1rem .75rem;background:rgba(232,99,122,.04)}
+.pi{font-size:22px;display:block;margin-bottom:.5rem}
+.pt{font-size:11px;color:rgba(252,232,239,.48);letter-spacing:.5px;line-height:1.6}
+
+.dots{display:flex;gap:8px;justify-content:center;margin-top:2rem}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(232,99,122,.2);cursor:pointer;transition:all .3s}
+.dot.a{background:#e8637a;width:18px;border-radius:3px}
+
+.rose-float{font-size:54px;display:block;margin:0 auto 1.5rem;animation:float 3.2s ease-in-out infinite}
+.heart-pulse{font-size:72px;display:block;margin:0 auto 1.5rem;animation:hb 1.4s ease-in-out infinite}
+.brheart{font-size:52px;display:block;margin:0 auto 1.5rem;animation:wobble 2.5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes hb{0%,100%{transform:scale(1)}15%{transform:scale(1.22)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
+@keyframes wobble{0%,100%{transform:rotate(0)}20%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}}
+
+/* SVG couple illustrations */
+.couple-wrap{margin:1.5rem auto;width:100%;max-width:400px}
+.couple-wrap svg{width:100%;height:auto;display:block}
+</style>
+
+<canvas id="bg"></canvas>
+<div class="wrap">
+
+<!-- S1: Enter Name -->
+<div class="screen on" id="s1">
+  <span class="rose-float">🌹</span>
+  <div class="tag">✦ a love letter just for him ✦</div>
+  <h1 class="big">For the one<br>who makes my<br><em>heart bloom</em></h1>
+  <div class="div"></div>
+  <div class="name-box">
+    <span class="name-label">Write his name here</span>
+    <input class="name-input" id="nameInput" type="text" placeholder="His beautiful name..." maxlength="28" autocomplete="off"/>
+  </div>
+  <p class="body" style="margin-top:.75rem;font-style:italic;color:rgba(252,232,239,.28);font-size:13px">Press Enter or tap below to begin 🌹</p>
+  <div class="btn-row"><button class="btn-nav rose" onclick="startProposal()">Begin our story →</button></div>
+</div>
+
+<!-- S2: Opening with couple -->
+<div class="screen" id="s2">
+  <div class="tag">✦ a story of two hearts ✦</div>
+  <h2 class="big" style="font-size:clamp(26px,4.8vw,48px)">My dearest<br><em id="n2" class="name-show">—</em></h2>
+  <div class="div2"><span class="div2-icon">🌹</span></div>
+
+  <!-- Couple walking SVG -->
+  <div class="couple-wrap">
+    <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- Moon -->
+      <ellipse cx="320" cy="40" rx="30" ry="30" fill="rgba(252,200,180,.12)"/>
+      <ellipse cx="328" cy="38" rx="22" ry="22" fill="rgba(252,200,180,.08)"/>
+      <!-- Stars -->
+      <circle cx="60" cy="25" r="1.5" fill="rgba(252,220,210,.5)"/>
+      <circle cx="100" cy="15" r="1" fill="rgba(252,220,210,.4)"/>
+      <circle cx="200" cy="10" r="1.5" fill="rgba(252,220,210,.5)"/>
+      <circle cx="260" cy="30" r="1" fill="rgba(252,220,210,.4)"/>
+      <circle cx="140" cy="35" r="1.2" fill="rgba(252,220,210,.35)"/>
+      <circle cx="350" cy="75" r="1.2" fill="rgba(252,220,210,.4)"/>
+      <circle cx="30" cy="60" r="1" fill="rgba(252,220,210,.35)"/>
+      <!-- Ground path -->
+      <ellipse cx="200" cy="205" rx="180" ry="12" fill="rgba(192,51,77,.08)"/>
+      <!-- Rose petals on ground -->
+      <ellipse cx="100" cy="200" rx="7" ry="3" fill="rgba(192,51,77,.25)" transform="rotate(-15,100,200)"/>
+      <ellipse cx="160" cy="202" rx="5" ry="2.5" fill="rgba(232,99,122,.2)" transform="rotate(10,160,202)"/>
+      <ellipse cx="280" cy="201" rx="6" ry="2.5" fill="rgba(192,51,77,.2)" transform="rotate(-8,280,201)"/>
+      <!-- Her figure (left) -->
+      <!-- Dress/skirt -->
+      <path d="M168 140 Q155 165 148 195 Q168 190 178 195 Q182 165 178 140 Z" fill="#c0334d" opacity=".85"/>
+      <!-- Body -->
+      <rect x="166" y="110" width="14" height="32" rx="6" fill="#e8b4a0"/>
+      <!-- Head -->
+      <circle cx="173" cy="100" r="13" fill="#e8b4a0"/>
+      <!-- Hair flowing -->
+      <path d="M162 95 Q155 88 158 110 Q163 108 165 105 Z" fill="#5a2020"/>
+      <path d="M184 95 Q192 88 189 108 Q184 106 183 103 Z" fill="#5a2020"/>
+      <path d="M163 93 Q160 82 173 80 Q186 82 183 93" fill="#5a2020"/>
+      <!-- Her arm extended right -->
+      <path d="M180 125 Q195 132 205 135" stroke="#e8b4a0" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <!-- Flower in hair -->
+      <circle cx="163" cy="88" r="4" fill="#e8637a" opacity=".8"/>
+      <circle cx="163" cy="88" r="2" fill="#fce8ef"/>
+
+      <!-- His figure (right) -->
+      <!-- Trousers -->
+      <path d="M222 145 Q215 170 212 195 Q220 195 224 195 Q226 175 227 155 Q228 175 230 195 Q234 195 238 195 Q235 170 232 145 Z" fill="#4a1525"/>
+      <!-- Shirt -->
+      <rect x="219" y="112" width="16" height="35" rx="6" fill="#8b1a2e"/>
+      <!-- Head -->
+      <circle cx="227" cy="101" r="13" fill="#d4956a"/>
+      <!-- Hair -->
+      <path d="M216 96 Q214 84 227 82 Q240 84 238 96" fill="#3a1a10"/>
+      <!-- His arm extended left -->
+      <path d="M220 127 Q207 132 205 135" stroke="#d4956a" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+      <!-- HOLDING HANDS in middle -->
+      <circle cx="205" cy="135" r="7" fill="#e8637a" opacity=".4"/>
+      <!-- Her hand -->
+      <ellipse cx="202" cy="135" rx="6" ry="4" fill="#e8b4a0"/>
+      <!-- His hand -->
+      <ellipse cx="210" cy="136" rx="6" ry="4" fill="#d4956a"/>
+      <!-- Fingers intertwined hint -->
+      <path d="M200 132 Q206 130 212 132 Q206 140 200 138 Z" fill="rgba(232,99,122,.2)"/>
+
+      <!-- Small heart above hands -->
+      <path d="M203 120 Q203 116 206 116 Q209 116 209 120 Q209 124 206 127 Q203 124 203 120 Z" fill="#e8637a" opacity=".7"/>
+
+      <!-- Floating rose petals -->
+      <ellipse cx="130" cy="120" rx="6" ry="3" fill="rgba(232,99,122,.3)" transform="rotate(-25,130,120)"/>
+      <ellipse cx="270" cy="105" rx="5" ry="2.5" fill="rgba(192,51,77,.25)" transform="rotate(20,270,105)"/>
+      <ellipse cx="150" cy="80" rx="4" ry="2" fill="rgba(232,99,122,.2)" transform="rotate(-10,150,80)"/>
+      <ellipse cx="255" cy="85" rx="5" ry="2.2" fill="rgba(192,51,77,.2)" transform="rotate(15,255,85)"/>
+    </svg>
+  </div>
+
+  <div class="qbox" style="margin-top:.5rem">
+    <p class="qt">"In the arithmetic of love, one plus one equals everything — and two minus one equals nothing."</p>
+    <p class="qa">— Mignon McLaughlin</p>
+  </div>
+  <div class="btn-row">
+    <button class="btn-nav" onclick="go(1)">← Back</button>
+    <button class="btn-nav rose" onclick="go(3)">Continue →</button>
+  </div>
+  <div class="dots"><div class="dot"></div><div class="dot a"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+</div>
+
+<!-- S3: Quotes + couple under stars -->
+<div class="screen" id="s3">
+  <div class="tag">✦ what you are to me ✦</div>
+
+  <!-- Couple under stars SVG -->
+  <div class="couple-wrap" style="max-width:380px">
+    <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Night sky gradient feel via shapes -->
+      <circle cx="190" cy="20" r="60" fill="rgba(232,99,122,.04)"/>
+      <!-- Stars scattered -->
+      <circle cx="40" cy="20" r="1.5" fill="rgba(252,220,210,.6)"/>
+      <circle cx="80" cy="10" r="1" fill="rgba(252,220,210,.45)"/>
+      <circle cx="130" cy="18" r="1.8" fill="rgba(252,220,210,.55)"/>
+      <circle cx="200" cy="8" r="1.2" fill="rgba(252,220,210,.5)"/>
+      <circle cx="260" cy="22" r="1.5" fill="rgba(252,220,210,.45)"/>
+      <circle cx="310" cy="12" r="1" fill="rgba(252,220,210,.5)"/>
+      <circle cx="350" cy="30" r="1.5" fill="rgba(252,220,210,.4)"/>
+      <circle cx="170" cy="35" r="1" fill="rgba(252,220,210,.4)"/>
+      <circle cx="90" cy="45" r="1.2" fill="rgba(252,220,210,.35)"/>
+      <circle cx="330" cy="55" r="1" fill="rgba(252,220,210,.35)"/>
+      <!-- Bench -->
+      <rect x="120" y="155" width="140" height="8" rx="4" fill="#5a1a28"/>
+      <rect x="125" y="135" width="130" height="6" rx="3" fill="#4a1520"/>
+      <rect x="128" y="140" width="8" height="23" rx="3" fill="#5a1a28"/>
+      <rect x="244" y="140" width="8" height="23" rx="3" fill="#5a1a28"/>
+      <!-- Blanket/ground -->
+      <ellipse cx="190" cy="185" rx="130" ry="10" fill="rgba(176,42,66,.07)"/>
+
+      <!-- Her figure sitting -->
+      <path d="M152 135 Q145 155 140 165 Q150 165 155 165 Q158 150 160 135 Z" fill="#c0334d" opacity=".82"/>
+      <rect x="150" y="108" width="13" height="28" rx="6" fill="#e8b4a0"/>
+      <circle cx="156" cy="98" r="12" fill="#e8b4a0"/>
+      <path d="M146 93 Q143 83 156 81 Q169 83 166 93" fill="#5a2020"/>
+      <path d="M145 90 Q138 85 141 105 Q146 103 148 100 Z" fill="#5a2020"/>
+      <!-- Flower -->
+      <circle cx="147" cy="86" r="3.5" fill="#e8637a" opacity=".85"/>
+      <circle cx="147" cy="86" r="1.8" fill="#fce8ef"/>
+      <!-- Her arm around him -->
+      <path d="M163 118 Q175 115 185 116" stroke="#e8b4a0" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Him sitting -->
+      <path d="M222 135 Q215 155 212 165 Q220 165 224 165 Q226 150 228 135 Z" fill="#4a1525"/>
+      <rect x="218" y="108" width="14" height="28" rx="6" fill="#8b1a2e"/>
+      <circle cx="225" cy="97" r="12" fill="#d4956a"/>
+      <path d="M215 92 Q213 82 225 80 Q237 82 235 92" fill="#3a1a10"/>
+      <!-- His arm around her -->
+      <path d="M218 116 Q207 113 196 115" stroke="#d4956a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Hearts floating -->
+      <path d="M183 75 Q183 71 186 71 Q189 71 189 75 Q189 79 186 82 Q183 79 183 75 Z" fill="#e8637a" opacity=".6"/>
+      <path d="M192 65 Q192 60 196 60 Q200 60 200 65 Q200 70 196 74 Q192 70 192 65 Z" fill="#e8637a" opacity=".4"/>
+      <path d="M174 68 Q174 65 177 65 Q180 65 180 68 Q180 71 177 74 Q174 71 174 68 Z" fill="#e8637a" opacity=".35"/>
+    </svg>
+  </div>
+
+  <div class="qgrid">
+    <div class="qbox">
+      <p class="qt">"I saw that you were perfect, and so I loved you. Then I saw that you were not perfect — and I loved you even more."</p>
+      <p class="qa">— Angelita Lim</p>
+    </div>
+    <div class="qbox">
+      <p class="qt">"You are the last thought in my mind before I drift off to sleep, and the first thought when I wake up each morning."</p>
+      <p class="qa">— Unknown</p>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-nav" onclick="go(2)">← Back</button>
+    <button class="btn-nav rose" onclick="go(4)">The question →</button>
+  </div>
+  <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot a"></div><div class="dot"></div><div class="dot"></div></div>
+</div>
+
+<!-- S4: The Proposal -->
+<div class="screen" id="s4">
+  <span class="rose-float">💍</span>
+  <div class="tag">✦ from the deepest place in my heart ✦</div>
+
+  <!-- Hands reaching SVG -->
+  <div class="couple-wrap" style="max-width:360px;margin-bottom:.5rem">
+    <svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg">
+      <!-- Soft glow behind hands -->
+      <ellipse cx="180" cy="95" rx="70" ry="35" fill="rgba(232,99,122,.1)"/>
+      <!-- Petals floating -->
+      <ellipse cx="80" cy="50" rx="8" ry="3.5" fill="rgba(232,99,122,.25)" transform="rotate(-20,80,50)"/>
+      <ellipse cx="280" cy="45" rx="7" ry="3" fill="rgba(192,51,77,.2)" transform="rotate(18,280,45)"/>
+      <ellipse cx="130" cy="30" rx="6" ry="2.5" fill="rgba(232,99,122,.2)" transform="rotate(-10,130,30)"/>
+      <ellipse cx="240" cy="35" rx="5" ry="2.5" fill="rgba(192,51,77,.18)" transform="rotate(12,240,35)"/>
+      <ellipse cx="60" cy="100" rx="5" ry="2" fill="rgba(232,99,122,.15)" transform="rotate(25,60,100)"/>
+      <ellipse cx="305" cy="95" rx="6" ry="2.5" fill="rgba(192,51,77,.15)" transform="rotate(-15,305,95)"/>
+
+      <!-- HER HAND (right side, delicate) -->
+      <path d="M240 155 Q238 120 236 105 Q234 95 230 88" stroke="#e8b4a0" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <!-- Her fingers -->
+      <path d="M230 88 Q228 76 226 70" stroke="#e8b4a0" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M233 87 Q232 74 231 67" stroke="#e8b4a0" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M237 88 Q237 75 237 68" stroke="#e8b4a0" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+      <path d="M241 90 Q242 78 243 72" stroke="#e8b4a0" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M244 95 Q248 85 250 80" stroke="#e8b4a0" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <!-- Ring on her finger -->
+      <circle cx="231" cy="67" r="5" fill="none" stroke="#e8637a" stroke-width="2.5"/>
+      <circle cx="231" cy="67" r="3" fill="rgba(232,99,122,.4)"/>
+      <circle cx="229" cy="65" r="1.5" fill="rgba(252,220,210,.7)"/>
+
+      <!-- HIS HAND (left side, slightly larger) -->
+      <path d="M120 155 Q122 118 124 103 Q126 92 130 85" stroke="#d4956a" stroke-width="16" fill="none" stroke-linecap="round"/>
+      <!-- His fingers reaching toward hers -->
+      <path d="M130 85 Q132 72 134 65" stroke="#d4956a" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M127 84 Q128 71 128 64" stroke="#d4956a" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M123 84 Q122 72 122 65" stroke="#d4956a" stroke-width="7.5" fill="none" stroke-linecap="round"/>
+      <path d="M119 86 Q117 75 116 68" stroke="#d4956a" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M116 92 Q112 82 110 76" stroke="#d4956a" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Hands clasping in center -->
+      <ellipse cx="180" cy="88" rx="18" ry="10" fill="rgba(232,99,122,.2)"/>
+      <!-- Connection point -->
+      <path d="M175 82 Q180 78 185 82 Q190 88 185 94 Q180 98 175 94 Q170 88 175 82 Z" fill="rgba(232,99,122,.15)"/>
+
+      <!-- Hearts rising -->
+      <path d="M172 55 Q172 50 176 50 Q180 50 180 55 Q180 60 176 64 Q172 60 172 55 Z" fill="#e8637a" opacity=".65"/>
+      <path d="M182 42 Q182 36 187 36 Q192 36 192 42 Q192 48 187 53 Q182 48 182 42 Z" fill="#e8637a" opacity=".45"/>
+      <path d="M163 45 Q163 40 167 40 Q171 40 171 45 Q171 50 167 54 Q163 50 163 45 Z" fill="#e8637a" opacity=".35"/>
+    </svg>
+  </div>
+
+  <h2 class="big" style="font-size:clamp(24px,4.5vw,46px)"><em id="n4" class="name-show">—</em><br><span style="color:#fce8ef;font-style:normal">I like you —</span><br><em>will you come with me<br>for a lifetime?</em></h2>
+  <div class="div2"><span class="div2-icon">🌹</span></div>
+  <div class="qbox">
+    <p class="qt">"Take my hand, take my whole life too — for I can't help falling in love with you."</p>
+    <p class="qa">— Elvis Presley</p>
+  </div>
+  <p class="body" style="margin-top:1rem">Every road I walk, every dream I chase, every sunrise I see — I want you beside me for all of it. Just you and me, hand in hand, for a lifetime. 🌹</p>
+  <div class="btn-row" style="margin-top:1.5rem">
+    <button class="btn-yes" onclick="go(5)">🌹 Yes, I'll walk with you</button>
+    <button class="btn-no" id="noBtn" onclick="noClick()">Maybe not...</button>
+  </div>
+  <p class="no-msg" id="noMsg"></p>
+  <div class="btn-row"><button class="btn-nav" onclick="go(3)">← Back</button></div>
+  <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot a"></div><div class="dot"></div></div>
+</div>
+
+<!-- S5: Yes! -->
+<div class="screen" id="s5">
+  <span class="heart-pulse">💖</span>
+  <div class="tag">✦ together forever ✦</div>
+  <h2 class="big" style="color:#e8637a;font-size:clamp(28px,5vw,54px)">He said yes —<br><em>our lifetime begins</em></h2>
+  <div class="div2"><span class="div2-icon">🌹</span></div>
+
+  <!-- Couple dancing SVG -->
+  <div class="couple-wrap" style="max-width:340px">
+    <svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="170" cy="100" r="80" fill="rgba(232,99,122,.06)"/>
+      <circle cx="170" cy="100" r="55" fill="rgba(232,99,122,.04)"/>
+      <!-- Stars -->
+      <circle cx="30" cy="20" r="1.5" fill="rgba(252,220,210,.55)"/>
+      <circle cx="70" cy="10" r="1" fill="rgba(252,220,210,.45)"/>
+      <circle cx="280" cy="15" r="1.5" fill="rgba(252,220,210,.5)"/>
+      <circle cx="310" cy="40" r="1.2" fill="rgba(252,220,210,.45)"/>
+      <circle cx="50" cy="55" r="1" fill="rgba(252,220,210,.4)"/>
+      <circle cx="300" cy="70" r="1.2" fill="rgba(252,220,210,.4)"/>
+      <!-- Petals swirling -->
+      <ellipse cx="70" cy="80" rx="7" ry="3" fill="rgba(232,99,122,.28)" transform="rotate(-30,70,80)"/>
+      <ellipse cx="280" cy="75" rx="6" ry="2.5" fill="rgba(192,51,77,.22)" transform="rotate(20,280,75)"/>
+      <ellipse cx="90" cy="150" rx="5" ry="2.2" fill="rgba(232,99,122,.2)" transform="rotate(15,90,150)"/>
+      <ellipse cx="260" cy="145" rx="6" ry="2.5" fill="rgba(192,51,77,.2)" transform="rotate(-12,260,145)"/>
+      <ellipse cx="120" cy="40" rx="5" ry="2" fill="rgba(232,99,122,.22)" transform="rotate(-18,120,40)"/>
+      <ellipse cx="230" cy="35" rx="4" ry="2" fill="rgba(192,51,77,.18)" transform="rotate(25,230,35)"/>
+
+      <!-- Her (tilted, dancing) -->
+      <path d="M148 130 Q138 155 132 182 Q143 182 150 182 Q155 162 157 142 Z" fill="#c0334d" opacity=".85" transform="rotate(-8,148,150)"/>
+      <path d="M148 130 Q160 128 162 142 Q155 145 148 143 Z" fill="#a02040" opacity=".7" transform="rotate(-8,148,140)"/>
+      <rect x="145" y="103" width="13" height="30" rx="6" fill="#e8b4a0" transform="rotate(-8,151,118)"/>
+      <circle cx="151" cy="93" r="13" fill="#e8b4a0"/>
+      <path d="M140 88 Q138 77 151 75 Q164 77 161 88" fill="#5a2020"/>
+      <path d="M139 85 Q131 80 135 102 Q140 100 142 96 Z" fill="#5a2020"/>
+      <circle cx="140" cy="80" r="4" fill="#e8637a" opacity=".85"/>
+      <circle cx="140" cy="80" r="2" fill="#fce8ef"/>
+      <!-- Her arms raised/extended -->
+      <path d="M158 110 Q170 100 182 98" stroke="#e8b4a0" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+      <!-- Him (tilted other way) -->
+      <path d="M192 130 Q196 155 198 182 Q206 182 212 182 Q208 162 206 142 Q208 130 192 130 Z" fill="#4a1525" transform="rotate(8,200,156)"/>
+      <rect x="188" y="103" width="14" height="30" rx="6" fill="#8b1a2e" transform="rotate(8,195,118)"/>
+      <circle cx="195" cy="92" r="13" fill="#d4956a"/>
+      <path d="M184 87 Q182 77 195 75 Q208 77 206 87" fill="#3a1a10"/>
+      <!-- His arms around her -->
+      <path d="M188 110 Q178 100 170 98" stroke="#d4956a" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+      <!-- Joined hands center -->
+      <ellipse cx="176" cy="98" rx="12" ry="7" fill="rgba(232,99,122,.25)"/>
+      <ellipse cx="173" cy="97" rx="7" ry="4.5" fill="#e8b4a0"/>
+      <ellipse cx="181" cy="98" rx="7" ry="4.5" fill="#d4956a"/>
+
+      <!-- Hearts -->
+      <path d="M165 60 Q165 55 169 55 Q173 55 173 60 Q173 65 169 69 Q165 65 165 60 Z" fill="#e8637a" opacity=".7"/>
+      <path d="M175 48 Q175 42 180 42 Q185 42 185 48 Q185 54 180 58 Q175 54 175 48 Z" fill="#e8637a" opacity=".5"/>
+      <path d="M155 52 Q155 47 159 47 Q163 47 163 52 Q163 57 159 61 Q155 57 155 52 Z" fill="#e8637a" opacity=".4"/>
+      <path d="M183 62 Q183 58 186 58 Q189 58 189 62 Q189 66 186 69 Q183 66 183 62 Z" fill="#e8637a" opacity=".35"/>
+    </svg>
+  </div>
+
+  <p class="mid" style="font-size:clamp(17px,3vw,26px)">"<span id="n5">—</span> & me —<br>hand in hand, for a lifetime 🌹"</p>
+  <div class="div2"><span class="div2-icon">💖</span></div>
+  <div class="qbox">
+    <p class="qt">"I have found the one whom my soul loves — and I will never let go of your hand."</p>
+    <p class="qa">— Song of Solomon 3:4</p>
+  </div>
+  <div class="pgrid">
+    <div class="pc"><span class="pi">🌹</span><div class="pt">Roses every morning</div></div>
+    <div class="pc"><span class="pi">🤝</span><div class="pt">Hand in hand always</div></div>
+    <div class="pc"><span class="pi">🌅</span><div class="pt">Every sunrise together</div></div>
+    <div class="pc"><span class="pi">✨</span><div class="pt">A lifetime of magic</div></div>
+  </div>
+  <div class="btn-row"><button class="btn-nav" onclick="go(4)">← Relive the moment</button></div>
+  <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot a"></div></div>
+</div>
+
+<!-- S6: Reconsider -->
+<div class="screen" id="s6">
+  <span class="brheart">💔</span>
+  <div class="tag">✦ please take my hand ✦</div>
+  <p class="mid">"The heart that truly loves never forgets — it just waits a little longer."</p>
+  <div class="div"></div>
+  <div class="couple-wrap" style="max-width:300px">
+    <svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
+      <!-- Two figures apart, one hand extended toward the other -->
+      <circle cx="80" cy="55" r="12" fill="#e8b4a0"/>
+      <path d="M73 50 Q71 40 80 38 Q89 40 87 50" fill="#5a2020"/>
+      <rect x="74" y="67" width="12" height="25" rx="5" fill="#e8b4a0"/>
+      <path d="M80 140 Q74 120 70 110 Q80 110 86 110 Q82 120 80 140 Z" fill="#c0334d" opacity=".8"/>
+      <path d="M86 75 Q100 78 110 80" stroke="#e8b4a0" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+
+      <circle cx="220" cy="55" r="12" fill="#d4956a"/>
+      <path d="M213 50 Q211 40 220 38 Q229 40 227 50" fill="#3a1a10"/>
+      <rect x="214" y="67" width="12" height="25" rx="6" fill="#8b1a2e"/>
+      <path d="M220 110 Q214 125 212 140 Q220 140 224 140 Q222 125 220 110 Z" fill="#4a1525"/>
+      <path d="M214 75 Q200 78 190 80" stroke="#d4956a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Gap in the middle with broken heart -->
+      <path d="M148 72 Q148 66 153 66 Q158 66 158 72 Q158 78 153 83 Q148 78 148 72 Z" fill="#e8637a" opacity=".3"/>
+      <line x1="150" y1="69" x2="156" y2="69" stroke="#fce8ef" stroke-width="1" opacity=".3"/>
+
+      <!-- Dotted line of longing between hands -->
+      <line x1="112" y1="80" x2="188" y2="80" stroke="rgba(232,99,122,.3)" stroke-width="1.5" stroke-dasharray="5,5"/>
+    </svg>
+  </div>
+  <div class="qbox">
+    <p class="qt">"I am not afraid of the distance between us. I am only afraid of a world where I never reached for your hand at all."</p>
+    <p class="qa">— still reaching for you 🌹</p>
+  </div>
+  <p class="body" style="margin-top:1rem">There is a hand here, stretched out just for you — warm, steady, and full of love. Won't you take it? 🥺</p>
+  <div class="btn-row">
+    <button class="btn-yes" onclick="go(5)">🌹 Yes — I'll take your hand</button>
+    <button class="btn-nav rose" onclick="go(4)">← Back to the question</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+let cur=1,noCnt=0,hisName='him';
+const noLines=[
+  "His heart just sank a little... 💔",
+  "A rose is wilting without your yes... 🥀",
+  "He is still here, hand outstretched 🌹",
+  "Are you sure? He loves you so deeply 🥺",
+  "One more tap and his heart breaks... 💔"
+];
+
+function startProposal(){
+  const v=document.getElementById('nameInput').value.trim();
+  hisName=v||'him';
+  ['n2','n4','n5','n6'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=hisName;
+  });
+  go(2);
+}
+
+function go(n){
+  document.getElementById('s'+cur).classList.remove('on');
+  cur=n;
+  document.getElementById('s'+cur).classList.add('on');
+  if(n===5) boom();
+  window.scrollTo(0,0);
+}
+
+function noClick(){
+  noCnt++;
+  const msg=document.getElementById('noMsg');
+  const btn=document.getElementById('noBtn');
+  msg.textContent=noLines[Math.min(noCnt-1,noLines.length-1)];
+  if(noCnt>=3){setTimeout(()=>go(6),400);return;}
+  const off=[95,-115,135];
+  btn.style.transition='transform .35s ease';
+  btn.style.transform=`translateX(${off[Math.min(noCnt-1,2)]}px)`;
+  setTimeout(()=>{btn.style.transform='translateX(0)';},700);
+}
+
+const cv=document.getElementById('bg');
+const ct=cv.getContext('2d');
+let stars=[],petals=[],confs=[],fr=0;
+
+function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+
+for(let i=0;i<120;i++) stars.push({
+  x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
+  r:Math.random()*1.3+.3,sp:Math.random()*.006+.002,ph:Math.random()*Math.PI*2
+});
+for(let i=0;i<22;i++) petals.push(mkP());
+
+function mkP(){
+  return{x:Math.random()*window.innerWidth,y:-30-Math.random()*200,
+    s:Math.random()*9+4,vx:(Math.random()-.5)*1.4,vy:Math.random()*.9+.35,
+    rot:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.045,al:Math.random()*.38+.1};
+}
+
+function boom(){
+  const cls=['#e8637a','#c0334d','#f9c6d0','#fce8ef','#a82841','#ffb3c1','#ff8fa3'];
+  for(let i=0;i<140;i++) confs.push({
+    x:Math.random()*cv.width,y:-10,
+    vx:(Math.random()-.5)*6,vy:Math.random()*5+2,
+    r:Math.random()*6+3,color:cls[Math.floor(Math.random()*cls.length)],
+    life:1,decay:Math.random()*.006+.004,
+    rot:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.16,sq:Math.random()>.4
+  });
+}
+
+function draw(){
+  ct.clearRect(0,0,cv.width,cv.height);
+  fr++;
+  for(const s of stars){
+    const a=.1+.5*Math.abs(Math.sin(fr*s.sp+s.ph));
+    ct.beginPath();ct.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ct.fillStyle=`rgba(252,200,210,${a})`;ct.fill();
+  }
+  for(const p of petals){
+    p.x+=p.vx;p.y+=p.vy;p.rot+=p.rs;
+    if(p.y>cv.height+20){Object.assign(p,mkP());p.x=Math.random()*cv.width;}
+    ct.save();ct.globalAlpha=p.al;ct.translate(p.x,p.y);ct.rotate(p.rot);
+    ct.beginPath();ct.ellipse(0,0,p.s,p.s/2.2,0,0,Math.PI*2);
+    ct.fillStyle='#c0334d';ct.fill();ct.restore();
+  }
+  confs=confs.filter(c=>c.life>0);
+  for(const c of confs){
+    c.x+=c.vx;c.y+=c.vy;c.vy+=.07;c.life-=c.decay;c.rot+=c.rs;
+    ct.save();ct.globalAlpha=c.life;ct.translate(c.x,c.y);ct.rotate(c.rot);
+    ct.fillStyle=c.color;
+    if(c.sq){ct.fillRect(-c.r/2,-c.r/3,c.r,c.r/1.5);}
+    else{ct.beginPath();ct.arc(0,0,c.r/2,0,Math.PI*2);ct.fill();}
+    ct.restore();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+document.getElementById('nameInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') startProposal();
+});
+</script>
